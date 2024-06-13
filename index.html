@@ -5,9 +5,10 @@
   </head>
   <body>
     <div id="console">
-        <button id="left" onmousedown="collect(0)" onmouseup="collect(null)">Left</button>
-        <button id="right" onmousedown="collect(1)" onmouseup="collect(null)">Right</button>
-        <button id="noise" onmousedown="collect(2)" onmouseup="collect(null)">Noise</button>
+        <button id="left" onmousedown="collect_left(0)" onmouseup="collect_left(null)">Left</button>
+        <button id="right" onmousedown="collect_right(1)" onmouseup="collect_right(null)">Right</button>
+        <button id="noise" onmousedown="collect_noise(2)" onmouseup="collect_noise(null)">Noise</button>
+        <div id="example-counter">0 examples collected</div>
         <br/><br/>
         <button id="train" onclick="train()">Train</button>
         <br/><br/>

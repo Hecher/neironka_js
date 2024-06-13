@@ -10,7 +10,7 @@ async function app() {
 const NUM_FRAMES = 3;
 let examples = [];
 
-function collect(label) {
+function collect_left(label) {
  if (recognizer.isListening()) {
    return recognizer.stopListening();
  }
@@ -19,8 +19,8 @@ function collect(label) {
  }
  recognizer.listen(async ({spectrogram: {frameSize, data}}) => {
    let vals = normalize(data.subarray(-frameSize * NUM_FRAMES));
-   examples.push({vals, label});
-   document.querySelector('#console').textContent =
+   examples.push({vals, label}); 
+   document.querySelector('#example-counter').textContent =
        `${examples.length} examples collected`;
  }, {
    overlapFactor: 0.999,
@@ -28,6 +28,46 @@ function collect(label) {
    invokeCallbackOnNoiseAndUnknown: true
  });
 }
+
+function collect_right(label) {
+    if (recognizer.isListening()) {
+      return recognizer.stopListening();
+    }
+    if (label == null) {
+      return;
+    }
+    recognizer.listen(async ({spectrogram: {frameSize, data}}) => {
+      let vals = normalize(data.subarray(-frameSize * NUM_FRAMES));
+      examples.push({vals, label}); 
+      document.querySelector('#example-counter').textContent =
+          `${examples.length} examples collected`;
+    }, {
+      overlapFactor: 0.999,
+      includeSpectrogram: true,
+      invokeCallbackOnNoiseAndUnknown: true
+    });
+   }
+
+   function collect_noise(label) {
+    if (recognizer.isListening()) {
+      return recognizer.stopListening();
+    }
+    if (label == null) {
+      return;
+    }
+    recognizer.listen(async ({spectrogram: {frameSize, data}}) => {
+      let vals = normalize(data.subarray(-frameSize * NUM_FRAMES));
+      examples.push({vals, label}); 
+      document.querySelector('#example-counter').textContent =
+          `${examples.length} examples collected`;
+    }, {
+      overlapFactor: 0.999,
+      includeSpectrogram: true,
+      invokeCallbackOnNoiseAndUnknown: true
+    });
+   }
+
+
 
 function normalize(x) {
  const mean = -100;
