@@ -7,5 +7,8 @@
   },
   "author": "Wasyan",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "@tensorflow/tfjs": "^4.20.0"
+  }
 }

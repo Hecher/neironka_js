@@ -1,4 +1,6 @@
 let recognizer;
+// import * as tf from '@tensorflow/tfjs';
+// const tf = require('@tensorflow/tfjs');
 
 async function app() {
     recognizer = speechCommands.create('BROWSER_FFT');
@@ -89,7 +91,7 @@ async function train() {
    epochs: 10,
    callbacks: {
      onEpochEnd: (epoch, logs) => {
-       document.querySelector('#console').textContent =
+       document.querySelector('#accuracy_weight').textContent =
            `Accuracy: ${(logs.acc * 100).toFixed(1)}% Epoch: ${epoch + 1}`;
      }
    }
@@ -130,7 +132,7 @@ function flatten(tensors) {
 
 async function moveSlider(labelTensor) {
     const label = (await labelTensor.data())[0];
-    document.getElementById('console').textContent = label;
+    document.getElementById('prediction').textContent = label;
     if (label == 2) {
       return;
     }
@@ -164,5 +166,40 @@ async function moveSlider(labelTensor) {
       invokeCallbackOnNoiseAndUnknown: true
     });
    }
+   
+async function save_weights() {
+  await model.save('downloads://');
+  console.log('Model saved as files in downloads, model name \"alpha\"');
+}
+
+async function save_weights_browser() {
+  await model.save('localstorage://alpha');
+  console.log('Model saved as files in downloads, model name \"alpha\"');
+}
+
+async function load_weights() {
+  const model = await tf.loadLayersModel('localstorage://alpha');
+  console.log('Model kys"');
+}
+// document.getElementById('model-file').addEventListener('change', async (event) => {
+//   const files = event.target.files;
+//   const jsonFile = Array.from(files).find(file => file.name.endsWith('.json'));
+//   const weightsFiles = Array.from(files).filter(file => file.name.endsWith('.bin'));
+
+//   const model = await tf.loadLayersModel(tf.io.browserFiles([jsonFile, ...weightsFiles]));
+//   console.log('Model loaded from files');
+//   model.summary();
+// });
+
+document.getElementById('model-file').addEventListener('change', async (event) => {
+  const files = event.target.files;
+  const jsonFile = Array.from(files).find(file => file.name.endsWith('.json'));
+  const weightsFiles = Array.from(files).filter(file => file.name.endsWith('.bin'));
+
+  const model = await tf.loadLayersModel(tf.io.browserFiles([jsonFile, ...weightsFiles]));
+  console.log('Model loaded from files');
+  model.summary();
+});
+
 
 app();
