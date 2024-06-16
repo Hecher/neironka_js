@@ -1,4 +1,5 @@
 let recognizer;
+// import {loadGraphModel} from '@tensorflow/tfjs-converter';
 // import * as tf from '@tensorflow/tfjs';
 // const tf = require('@tensorflow/tfjs');
 
@@ -165,22 +166,37 @@ async function moveSlider(labelTensor) {
       includeSpectrogram: true,
       invokeCallbackOnNoiseAndUnknown: true
     });
+    console.log(model);
    }
    
 async function save_weights() {
-  await model.save('downloads://');
+  model.save('downloads://');
   console.log('Model saved as files in downloads, model name \"alpha\"');
 }
-
+//сохранение через браузер
 async function save_weights_browser() {
-  await model.save('localstorage://alpha');
+  // model.save('localstorage://alpha');
+  const saveResults = await model.save('localstorage://alpha');
   console.log('Model saved as files in downloads, model name \"alpha\"');
+  console.log(saveResults)
 }
 
-async function load_weights() {
-  const model = await tf.loadLayersModel('localstorage://alpha');
-  console.log('Model kys"');
-}
+// const model = tf.sequential(
+//   {layers: [tf.layers.dense({units: 1, inputShape: [3]})]});
+// console.log('Prediction from original model:');
+// model.predict(tf.ones([1, 3])).print();
+
+// const saveResults = await model.save('localstorage://my-model-1');
+
+// const loadedModel = await tf.loadLayersModel('localstorage://my-model-1');
+// console.log('Prediction from loaded model:');
+// loadedModel.predict(tf.ones([1, 3])).print();
+
+
+// async function load_weights() {
+//   const model = await tf.loadLayersModel('localstorage://alpha');
+//   console.log('Model kys"');
+// }
 // document.getElementById('model-file').addEventListener('change', async (event) => {
 //   const files = event.target.files;
 //   const jsonFile = Array.from(files).find(file => file.name.endsWith('.json'));
@@ -191,15 +207,43 @@ async function load_weights() {
 //   model.summary();
 // });
 
-document.getElementById('model-file').addEventListener('change', async (event) => {
-  const files = event.target.files;
-  const jsonFile = Array.from(files).find(file => file.name.endsWith('.json'));
-  const weightsFiles = Array.from(files).filter(file => file.name.endsWith('.bin'));
+// document.getElementById('model-file').addEventListener('change', async (event) => {
+//   const files = event.target.files;
+//   const jsonFile = Array.from(files).find(file => file.name.endsWith('.json'));
+//   const weightsFiles = Array.from(files).filter(file => file.name.endsWith('.bin'));
 
-  const model = await tf.loadLayersModel(tf.io.browserFiles([jsonFile, ...weightsFiles]));
+//   const uploadJSONInput = document.getElementById('upload-json');
+//   const uploadWeightsInput = document.getElementById('upload-weights');
+//   const model = await tf.loadLayersModel(tf.io.browserFiles([uploadJSONInput.files[0], uploadWeightsInput.files[0]]));
+//   console.log('Model loaded from files');
+//   model.summary();
+//   console.log(model);
+// });
+
+async function load_weights_browser() {
+  // const model = await tf.loadLayersModel('localstorage://alpha');
+  // const loadedModel = await tf.loadLayersModel('localstorage://alpha');
+  const model = await loadGraphModel('localstorage://alpha');
+  console.log(loadedModel)
+  // model.summary();
+}
+
+async function submit_files(){
+  const uploadJSONInput = document.getElementById('upload-json');
+  const uploadWeightsInput = document.getElementById('upload-weights');
+  model = await tf.loadLayersModel(tf.io.browserFiles(
+     [uploadJSONInput.files[0], uploadWeightsInput.files[0]]));
   console.log('Model loaded from files');
-  model.summary();
-});
+  console.log(model);
+  console.log(uploadJSONInput);
+  console.log(uploadWeightsInput);
 
-
+  const optimizer = tf.train.adam(0.01);
+  model.compile({
+    optimizer,
+    loss: 'categoricalCrossentropy',
+    metrics: ['accuracy']
+  });
+}
+  
 app();
