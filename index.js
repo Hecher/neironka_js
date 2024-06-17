@@ -12,6 +12,7 @@ async function app() {
    }
 // One frame is ~23ms of audio.
 const NUM_FRAMES = 3;
+const frameSize = 232; 
 let examples = [];
 
 
@@ -24,6 +25,7 @@ function collect_left(label) {
    return;
  }
  recognizer.listen(async ({spectrogram: {frameSize, data}}) => {
+   console.log(frameSize);
    let vals = normalize(data.subarray(-frameSize * NUM_FRAMES));
    examples.push({vals, label}); 
    document.querySelector('#example-counter').textContent =
@@ -33,6 +35,7 @@ function collect_left(label) {
    includeSpectrogram: true,
    invokeCallbackOnNoiseAndUnknown: true
  });
+ console.log(examples);
 }
 
 function collect_right(label) {
@@ -54,7 +57,7 @@ function collect_right(label) {
     });
    }
 
-   function collect_noise(label) {
+function collect_noise(label) {
     if (recognizer.isListening()) {
       return recognizer.stopListening();
     }
@@ -74,107 +77,143 @@ function collect_right(label) {
    }
 //конец микрофона
 
+//то что предложил чат гпт
+
+
+
+//1st try
 //try collect data from files
 
 //изменил const на let 
-const leftExamples = [];
-const rightExamples = [];
-const noiseExamples = [];
+// const leftExamples = [];
+// const rightExamples = [];
+// const noiseExamples = [];
 
-async function submit_data() {
-document.getElementById('upload-left').addEventListener('change', (event) => {
-  const files = event.target.files;
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const audioBuffer = await decodeAudioData(event.target.result);
-      leftExamples.push(audioBuffer);
-      updateExampleCounter();
-    };
-    reader.readAsArrayBuffer(file);
-  }
-});
+// async function submit_data() {
+// document.getElementById('upload-left').addEventListener('change', (event) => {
+//   const files = event.target.files;
+//   for (let i = 0; i < files.length; i++) {
+//     const file = files[i];
+//     const reader = new FileReader();
+//     reader.onload = async (event) => {
+//       const audioBuffer = await decodeAudioData(event.target.result);
+//       leftExamples.push(audioBuffer);
+//       updateExampleCounter();
+//     };
+//     reader.readAsArrayBuffer(file);
+//   }
+// });
 
-document.getElementById('upload-right').addEventListener('change', (event) => {
-  const files = event.target.files;
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const audioBuffer = await decodeAudioData(event.target.result);
-      rightExamples.push(audioBuffer);
-      updateExampleCounter();
-    };
-    reader.readAsArrayBuffer(file);
-  }
-});
+// document.getElementById('upload-right').addEventListener('change', (event) => {
+//   const files = event.target.files;
+//   for (let i = 0; i < files.length; i++) {
+//     const file = files[i];
+//     const reader = new FileReader();
+//     reader.onload = async (event) => {
+//       const audioBuffer = await decodeAudioData(event.target.result);
+//       rightExamples.push(audioBuffer);
+//       updateExampleCounter();
+//     };
+//     reader.readAsArrayBuffer(file);
+//   }
+// });
 
 
-document.getElementById('upload-noise').addEventListener('change', (event) => {
-  const files = event.target.files;
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const audioBuffer = await decodeAudioData(event.target.result);
-      noiseExamples.push(audioBuffer);
-      updateExampleCounter();
-    };
-    reader.readAsArrayBuffer(file);
-  }
-});
-}
-async function decodeAudioData(arrayBuffer) {
-  const audioContext = new AudioContext();
-  const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-  return audioBuffer;
-}
+// document.getElementById('upload-noise').addEventListener('change', (event) => {
+//   const files = event.target.files;
+//   for (let i = 0; i < files.length; i++) {
+//     const file = files[i];
+//     const reader = new FileReader();
+//     reader.onload = async (event) => {
+//       const audioBuffer = await decodeAudioData(event.target.result);
+//       noiseExamples.push(audioBuffer);
+//       updateExampleCounter();
+//     };
+//     reader.readAsArrayBuffer(file);
+//   }
+// });
+// }
+// async function decodeAudioData(arrayBuffer) {
+//   const audioContext = new AudioContext();
+//   const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+//   return audioBuffer;
+// }
 
-function updateExampleCounter() {
-  const exampleCounter = document.getElementById('example-counter');
-  exampleCounter.innerText = `${leftExamples.length + rightExamples.length + noiseExamples.length} examples collected`;
-  console.log(leftExamples.length, rightExamples.length, noiseExamples.length);
-  console.log(leftExamples);
-}
+// function updateExampleCounter() {
+//   const exampleCounter = document.getElementById('example-counter');
+//   exampleCounter.innerText = `${leftExamples.length + rightExamples.length + noiseExamples.length} examples collected`;
+//   console.log(leftExamples.length, rightExamples.length, noiseExamples.length);
+//   console.log(leftExamples);
+// }
 
 // end
 const INPUT_SHAPE = [NUM_FRAMES, 232, 1];
 let model;
-// трениноровка модели с датасетом
-// загружаем данные
-async function train(leftExamples, rightExamples, noiseExamples) {
-  toggleButtons(false);
+// // трениноровка модели с датасетом
+// // загружаем данные
+// async function train(leftExamples, rightExamples, noiseExamples) {
+//   toggleButtons(false);
   
-  // Combine all examples into a single array
-  console.log(leftExamples);
-  console.log(rightExamples);
-  console.log(noiseExamples);
-  console.log(leftExamples.length.cocncat(rightExamples.length));
-  const allExamples = leftExamples.concat(rightExamples).concat(noiseExamples);
+//   // Combine all examples into a single array
+//   console.log(leftExamples);
+//   console.log(rightExamples);
+//   console.log(noiseExamples);
+//   console.log(leftExamples.length.cocncat(rightExamples.length));
+//   const allExamples = leftExamples.concat(rightExamples).concat(noiseExamples);
 
-  // Convert the examples into tensors
-  const ys = tf.oneHot(allExamples.map(example => example.label), 3);
-  const xsShape = [allExamples.length, ...INPUT_SHAPE];
-  const xs = tf.tensor(allExamples.map(example => example.vals).flat(), xsShape);
+//   // Convert the examples into tensors
+//   const ys = tf.oneHot(allExamples.map(example => example.label), 3);
+//   const xsShape = [allExamples.length, ...INPUT_SHAPE];
+//   const xs = tf.tensor(allExamples.map(example => example.vals).flat(), xsShape);
 
-  // Train the model
-  await model.fit(xs, ys, {
-    batchSize: 16,
-    epochs: 10,
-    callbacks: {
-      onEpochEnd: (epoch, logs) => {
-        document.querySelector('#accuracy_weight').textContent =
-          `Accuracy: ${(logs.acc * 100).toFixed(1)}% Epoch: ${epoch + 1}`;
-      }
-    }
-  });
+//   // Train the model
+//   await model.fit(xs, ys, {
+//     batchSize: 16,
+//     epochs: 10,
+//     callbacks: {
+//       onEpochEnd: (epoch, logs) => {
+//         document.querySelector('#accuracy_weight').textContent =
+//           `Accuracy: ${(logs.acc * 100).toFixed(1)}% Epoch: ${epoch + 1}`;
+//       }
+//     }
+//   });
 
-  toggleButtons(true);
+//   toggleButtons(true);
+// }
+
+//чат
+document.getElementById('upload-left').addEventListener('change', handleFileUpload);
+
+async function handleFileUpload(event) {
+  const file = event.target.files[0];
+  if (!file) {
+    return;
+  }
+
+  const arrayBuffer = await file.arrayBuffer();
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+  console.log(arrayBuffer)
+  console.log(audioContext)
+  console.log(audioBuffer)
+
+  // Пример: получение данных спектрограммы
+  const channelData = audioBuffer.getChannelData(0);
+  let data = []; // Здесь будет храниться спектрограмма
+
+  // Получаем данные спектрограммы
+  for (let i = 0; i < channelData.length; i += frameSize) {
+    const frame = channelData.slice(i, i + frameSize);
+    data.push(...frame);
+  }
+
+  let vals = normalize(data.slice(-frameSize * NUM_FRAMES));
+  examples.push({vals, label: 'your-label'}); // Замените 'your-label' на нужный вам лейбл
+  document.querySelector('#example-counter').textContent =
+      `${examples.length} examples collected`;
+
+  console.log(examples);
 }
-
-
-
 
 
 function normalize(x) {
@@ -189,12 +228,12 @@ function normalize(x) {
 //тренировка модели с микрофоном
 // async function train() {
 //  toggleButtons(false);
-// //  const ys = tf.oneHot(examples.map(e => e.label), 3);
-// //  const xsShape = [examples.length, ...INPUT_SHAPE];
-// //  const xs = tf.tensor(flatten(examples.map(e => e.vals)), xsShape);
-//   const ys = tf.oneHot(leftExamples.map(e => e.label), 3);
-//   const xsShape = [leftExamples.length, ...INPUT_SHAPE];
-//   const xs = tf.tensor(flatten(leftExamples.map(e => e.vals)), xsShape);
+//  const ys = tf.oneHot(examples.map(e => e.label), 3);
+//  const xsShape = [examples.length, ...INPUT_SHAPE];
+//  const xs = tf.tensor(flatten(examples.map(e => e.vals)), xsShape);
+//   // const ys = tf.oneHot(leftExamples.map(e => e.label), 3);
+//   // const xsShape = [leftExamples.length, ...INPUT_SHAPE];
+//   // const xs = tf.tensor(flatten(leftExamples.map(e => e.vals)), xsShape);
 
 
 //  await model.fit(xs, ys, {
@@ -210,6 +249,31 @@ function normalize(x) {
 //  tf.dispose([xs, ys]);
 //  toggleButtons(true);
 // }
+
+async function train() {
+  toggleButtons(false);
+
+  // Подготовка данных
+  const ys = tf.oneHot(tf.tensor(examples.map(e => e.label), 'int32'), 3);
+  const xsShape = [examples.length, ...INPUT_SHAPE];
+  const xs = tf.tensor(flatten(examples.map(e => e.vals)), xsShape);
+
+  // Обучение модели
+  await model.fit(xs, ys, {
+    batchSize: 16,
+    epochs: 10,
+    callbacks: {
+      onEpochEnd: (epoch, logs) => {
+        document.querySelector('#accuracy_weight').textContent =
+          `Accuracy: ${(logs.acc * 100).toFixed(1)}% Epoch: ${epoch + 1}`;
+      }
+    }
+  });
+
+  // Очистка ресурсов
+  tf.dispose([xs, ys]);
+  toggleButtons(true);
+}
 
 //построение модели
 function buildModel() {
