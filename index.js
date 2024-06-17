@@ -3,6 +3,7 @@ let recognizer;
 // import * as tf from '@tensorflow/tfjs';
 // const tf = require('@tensorflow/tfjs');
 
+// запускаем модель
 async function app() {
     recognizer = speechCommands.create('BROWSER_FFT');
     await recognizer.ensureModelLoaded();
@@ -13,6 +14,8 @@ async function app() {
 const NUM_FRAMES = 3;
 let examples = [];
 
+
+//собирает информацию с микрофона, работает
 function collect_left(label) {
  if (recognizer.isListening()) {
    return recognizer.stopListening();
@@ -69,6 +72,108 @@ function collect_right(label) {
       invokeCallbackOnNoiseAndUnknown: true
     });
    }
+//конец микрофона
+
+//try collect data from files
+
+//изменил const на let 
+const leftExamples = [];
+const rightExamples = [];
+const noiseExamples = [];
+
+async function submit_data() {
+document.getElementById('upload-left').addEventListener('change', (event) => {
+  const files = event.target.files;
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const audioBuffer = await decodeAudioData(event.target.result);
+      leftExamples.push(audioBuffer);
+      updateExampleCounter();
+    };
+    reader.readAsArrayBuffer(file);
+  }
+});
+
+document.getElementById('upload-right').addEventListener('change', (event) => {
+  const files = event.target.files;
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const audioBuffer = await decodeAudioData(event.target.result);
+      rightExamples.push(audioBuffer);
+      updateExampleCounter();
+    };
+    reader.readAsArrayBuffer(file);
+  }
+});
+
+
+document.getElementById('upload-noise').addEventListener('change', (event) => {
+  const files = event.target.files;
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const audioBuffer = await decodeAudioData(event.target.result);
+      noiseExamples.push(audioBuffer);
+      updateExampleCounter();
+    };
+    reader.readAsArrayBuffer(file);
+  }
+});
+}
+async function decodeAudioData(arrayBuffer) {
+  const audioContext = new AudioContext();
+  const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+  return audioBuffer;
+}
+
+function updateExampleCounter() {
+  const exampleCounter = document.getElementById('example-counter');
+  exampleCounter.innerText = `${leftExamples.length + rightExamples.length + noiseExamples.length} examples collected`;
+  console.log(leftExamples.length, rightExamples.length, noiseExamples.length);
+  console.log(leftExamples);
+}
+
+// end
+const INPUT_SHAPE = [NUM_FRAMES, 232, 1];
+let model;
+// трениноровка модели с датасетом
+// загружаем данные
+async function train(leftExamples, rightExamples, noiseExamples) {
+  toggleButtons(false);
+  
+  // Combine all examples into a single array
+  console.log(leftExamples);
+  console.log(rightExamples);
+  console.log(noiseExamples);
+  console.log(leftExamples.length.cocncat(rightExamples.length));
+  const allExamples = leftExamples.concat(rightExamples).concat(noiseExamples);
+
+  // Convert the examples into tensors
+  const ys = tf.oneHot(allExamples.map(example => example.label), 3);
+  const xsShape = [allExamples.length, ...INPUT_SHAPE];
+  const xs = tf.tensor(allExamples.map(example => example.vals).flat(), xsShape);
+
+  // Train the model
+  await model.fit(xs, ys, {
+    batchSize: 16,
+    epochs: 10,
+    callbacks: {
+      onEpochEnd: (epoch, logs) => {
+        document.querySelector('#accuracy_weight').textContent =
+          `Accuracy: ${(logs.acc * 100).toFixed(1)}% Epoch: ${epoch + 1}`;
+      }
+    }
+  });
+
+  toggleButtons(true);
+}
+
+
 
 
 
@@ -78,29 +183,35 @@ function normalize(x) {
  return x.map(x => (x - mean) / std);
 }
 
-const INPUT_SHAPE = [NUM_FRAMES, 232, 1];
-let model;
 
-async function train() {
- toggleButtons(false);
- const ys = tf.oneHot(examples.map(e => e.label), 3);
- const xsShape = [examples.length, ...INPUT_SHAPE];
- const xs = tf.tensor(flatten(examples.map(e => e.vals)), xsShape);
+// leftExamples
 
- await model.fit(xs, ys, {
-   batchSize: 16,
-   epochs: 10,
-   callbacks: {
-     onEpochEnd: (epoch, logs) => {
-       document.querySelector('#accuracy_weight').textContent =
-           `Accuracy: ${(logs.acc * 100).toFixed(1)}% Epoch: ${epoch + 1}`;
-     }
-   }
- });
- tf.dispose([xs, ys]);
- toggleButtons(true);
-}
+//тренировка модели с микрофоном
+// async function train() {
+//  toggleButtons(false);
+// //  const ys = tf.oneHot(examples.map(e => e.label), 3);
+// //  const xsShape = [examples.length, ...INPUT_SHAPE];
+// //  const xs = tf.tensor(flatten(examples.map(e => e.vals)), xsShape);
+//   const ys = tf.oneHot(leftExamples.map(e => e.label), 3);
+//   const xsShape = [leftExamples.length, ...INPUT_SHAPE];
+//   const xs = tf.tensor(flatten(leftExamples.map(e => e.vals)), xsShape);
 
+
+//  await model.fit(xs, ys, {
+//    batchSize: 16,
+//    epochs: 10,
+//    callbacks: {
+//      onEpochEnd: (epoch, logs) => {
+//        document.querySelector('#accuracy_weight').textContent =
+//            `Accuracy: ${(logs.acc * 100).toFixed(1)}% Epoch: ${epoch + 1}`;
+//      }
+//    }
+//  });
+//  tf.dispose([xs, ys]);
+//  toggleButtons(true);
+// }
+
+//построение модели
 function buildModel() {
  model = tf.sequential();
  model.add(tf.layers.depthwiseConv2d({
@@ -120,6 +231,7 @@ function buildModel() {
  });
 }
 
+// работает - не трогай!!!
 function toggleButtons(enable) {
  document.querySelectorAll('button').forEach(b => b.disabled = !enable);
 }
@@ -131,6 +243,7 @@ function flatten(tensors) {
  return result;
 }
 
+// работает - не трогай!!!
 async function moveSlider(labelTensor) {
     const label = (await labelTensor.data())[0];
     document.getElementById('prediction').textContent = label;
@@ -143,6 +256,7 @@ async function moveSlider(labelTensor) {
         prevValue + (label === 0 ? -delta : delta);
    }
    
+   // работает - не трогай!!!
    function listen() {
     if (recognizer.isListening()) {
       recognizer.stopListening();
@@ -169,17 +283,19 @@ async function moveSlider(labelTensor) {
     console.log(model);
    }
    
+// работает - не трогай!!!
 async function save_weights() {
   model.save('downloads://');
   console.log('Model saved as files in downloads, model name \"alpha\"');
 }
-//сохранение через браузер
-async function save_weights_browser() {
+
+// //сохранение через браузер
+// async function save_weights_browser() {
   // model.save('localstorage://alpha');
-  const saveResults = await model.save('localstorage://alpha');
-  console.log('Model saved as files in downloads, model name \"alpha\"');
-  console.log(saveResults)
-}
+//   const saveResults = await model.save('localstorage://alpha');
+//   console.log('Model saved as files in downloads, model name \"alpha\"');
+//   console.log(saveResults)
+// }
 
 // const model = tf.sequential(
 //   {layers: [tf.layers.dense({units: 1, inputShape: [3]})]});
@@ -220,14 +336,15 @@ async function save_weights_browser() {
 //   console.log(model);
 // });
 
-async function load_weights_browser() {
+// async function load_weights_browser() {
   // const model = await tf.loadLayersModel('localstorage://alpha');
   // const loadedModel = await tf.loadLayersModel('localstorage://alpha');
-  const model = await loadGraphModel('localstorage://alpha');
-  console.log(loadedModel)
+  // const model = await loadGraphModel('localstorage://alpha');
+  // console.log(loadedModel)
   // model.summary();
-}
+// }
 
+// работает - не трогай!!!
 async function submit_files(){
   const uploadJSONInput = document.getElementById('upload-json');
   const uploadWeightsInput = document.getElementById('upload-weights');
