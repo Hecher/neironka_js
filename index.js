@@ -250,9 +250,35 @@ function normalize(x) {
 //  toggleButtons(true);
 // }
 
+// async function train() {
+//   toggleButtons(false);
+
+//   // Подготовка данных
+//   const ys = tf.oneHot(tf.tensor(examples.map(e => e.label), 'int32'), 3);
+//   const xsShape = [examples.length, ...INPUT_SHAPE];
+//   const xs = tf.tensor(flatten(examples.map(e => e.vals)), xsShape);
+
+//   // Обучение модели
+//   await model.fit(xs, ys, {
+//     batchSize: 16,
+//     epochs: 10,
+//     callbacks: {
+//       onEpochEnd: (epoch, logs) => {
+//         document.querySelector('#accuracy_weight').textContent =
+//           `Accuracy: ${(logs.acc * 100).toFixed(1)}% Epoch: ${epoch + 1}`;
+//       }
+//     }
+//   });
+
+//   // Очистка ресурсов
+//   tf.dispose([xs, ys]);
+//   toggleButtons(true);
+// }
+
 async function train() {
   toggleButtons(false);
 
+  console.log(examples)
   // Подготовка данных
   const ys = tf.oneHot(tf.tensor(examples.map(e => e.label), 'int32'), 3);
   const xsShape = [examples.length, ...INPUT_SHAPE];
@@ -269,10 +295,6 @@ async function train() {
       }
     }
   });
-
-  // Очистка ресурсов
-  tf.dispose([xs, ys]);
-  toggleButtons(true);
 }
 
 //построение модели
@@ -305,6 +327,12 @@ function flatten(tensors) {
  const result = new Float32Array(tensors.length * size);
  tensors.forEach((arr, i) => result.set(arr, i * size));
  return result;
+}
+
+function flatten2(arr) {
+  return arr.reduce((flat, toFlatten) => {
+    return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
+  }, []);
 }
 
 // работает - не трогай!!!
