@@ -11,9 +11,10 @@ async function app() {
     buildModel();
    }
 // One frame is ~23ms of audio.
-const NUM_FRAMES = 3;
+const NUM_FRAMES = 100;
 const frameSize = 232; 
 let examples = [];
+let examples1 = [];
 
 
 //собирает информацию с микрофона, работает
@@ -75,9 +76,12 @@ function collect_noise(label) {
       invokeCallbackOnNoiseAndUnknown: true
     });
    }
+
+
+
 //конец микрофона
 
-//то что предложил чат гпт
+//
 
 
 
@@ -181,7 +185,7 @@ let model;
 //   toggleButtons(true);
 // }
 
-//чат
+//датасет через файлы
 document.getElementById('upload-left').addEventListener('change', handleFileUpload);
 
 async function handleFileUpload(event) {
@@ -200,19 +204,26 @@ async function handleFileUpload(event) {
   // Пример: получение данных спектрограммы
   const channelData = audioBuffer.getChannelData(0);
   let data = []; // Здесь будет храниться спектрограмма
-
+  
   // Получаем данные спектрограммы
   for (let i = 0; i < channelData.length; i += frameSize) {
     const frame = channelData.slice(i, i + frameSize);
     data.push(...frame);
   }
 
-  let vals = normalize(data.slice(-frameSize * NUM_FRAMES));
-  examples.push({vals, label: 'your-label'}); // Замените 'your-label' на нужный вам лейбл
+  let vals = normalize1(data.slice(-frameSize * NUM_FRAMES));
+  console.log(vals);
+  let counter = 0;
+  examples1.push({vals, label: 0}); 
   document.querySelector('#example-counter').textContent =
-      `${examples.length} examples collected`;
-
-  console.log(examples);
+      `${examples1.length} examples collected`;
+      examples1.forEach(element => {
+        element.vals = new Float32Array(element.vals);
+        element.label = counter;
+        counter++;
+      });
+      console.log(examples1);
+  console.log(examples1);
 }
 
 
@@ -221,35 +232,41 @@ function normalize(x) {
  const std = 10;
  return x.map(x => (x - mean) / std);
 }
+function normalize1(x) {
+  const mean = -100;
+  const std = 10;
+  return x.map(x => (x - mean) / std);
+ }
 
 
 // leftExamples
 
-//тренировка модели с микрофоном
-// async function train() {
-//  toggleButtons(false);
-//  const ys = tf.oneHot(examples.map(e => e.label), 3);
-//  const xsShape = [examples.length, ...INPUT_SHAPE];
-//  const xs = tf.tensor(flatten(examples.map(e => e.vals)), xsShape);
-//   // const ys = tf.oneHot(leftExamples.map(e => e.label), 3);
-//   // const xsShape = [leftExamples.length, ...INPUT_SHAPE];
-//   // const xs = tf.tensor(flatten(leftExamples.map(e => e.vals)), xsShape);
+// тренировка модели с микрофоном
+async function train() {
+ toggleButtons(false);
+ const ys = tf.oneHot(examples.map(e => e.label), 3);
+ const xsShape = [examples.length, ...INPUT_SHAPE];
+ const xs = tf.tensor(flatten(examples.map(e => e.vals)), xsShape);
+  // const ys = tf.oneHot(leftExamples.map(e => e.label), 3);
+  // const xsShape = [leftExamples.length, ...INPUT_SHAPE];
+  // const xs = tf.tensor(flatten(leftExamples.map(e => e.vals)), xsShape);
+  console.log(examples);
 
+ await model.fit(xs, ys, {
+   batchSize: 16,
+   epochs: 10,
+   callbacks: {
+     onEpochEnd: (epoch, logs) => {
+       document.querySelector('#accuracy_weight').textContent =
+           `Accuracy: ${(logs.acc * 100).toFixed(1)}% Epoch: ${epoch + 1}`;
+     }
+   }
+ });
+ tf.dispose([xs, ys]);
+ toggleButtons(true);
+}
 
-//  await model.fit(xs, ys, {
-//    batchSize: 16,
-//    epochs: 10,
-//    callbacks: {
-//      onEpochEnd: (epoch, logs) => {
-//        document.querySelector('#accuracy_weight').textContent =
-//            `Accuracy: ${(logs.acc * 100).toFixed(1)}% Epoch: ${epoch + 1}`;
-//      }
-//    }
-//  });
-//  tf.dispose([xs, ys]);
-//  toggleButtons(true);
-// }
-
+//не помню что за функция тренировки
 // async function train() {
 //   toggleButtons(false);
 
@@ -275,19 +292,24 @@ function normalize(x) {
 //   toggleButtons(true);
 // }
 
-async function train() {
+// смешная тренировка, что вечно выдает ошибки
+
+async function train1() {
   toggleButtons(false);
 
-  console.log(examples)
+  console.log(examples1)
+  true_examples1 = examples1;
+  console.log(true_examples1)
   // Подготовка данных
-  const ys = tf.oneHot(tf.tensor(examples.map(e => e.label), 'int32'), 3);
-  const xsShape = [examples.length, ...INPUT_SHAPE];
-  const xs = tf.tensor(flatten(examples.map(e => e.vals)), xsShape);
+  const ys = tf.oneHot(true_examples1.map(e => e.label), 3);
+  const xsShape = [true_examples1.length, ...INPUT_SHAPE];
+  const xs = tf.tensor(flatten(true_examples1.map(e => e.vals)), xsShape);
+  console.log(true_examples1);
 
   // Обучение модели
   await model.fit(xs, ys, {
     batchSize: 16,
-    epochs: 10,
+    epochs: 100,
     callbacks: {
       onEpochEnd: (epoch, logs) => {
         document.querySelector('#accuracy_weight').textContent =
@@ -295,6 +317,7 @@ async function train() {
       }
     }
   });
+  toggleButtons(true);
 }
 
 //построение модели
