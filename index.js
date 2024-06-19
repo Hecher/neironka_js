@@ -11,7 +11,7 @@ async function app() {
     buildModel();
    }
 // One frame is ~23ms of audio.
-const NUM_FRAMES = 100;
+const NUM_FRAMES = 3;
 const frameSize = 232; 
 let examples = [];
 let examples1 = [];
@@ -185,6 +185,7 @@ let model;
 //   toggleButtons(true);
 // }
 
+let fileCounter = 0; 
 //датасет через файлы
 document.getElementById('upload-left').addEventListener('change', handleFileUpload);
 
@@ -193,6 +194,8 @@ async function handleFileUpload(event) {
   if (!file) {
     return;
   }
+
+  const uniqueLabel = fileCounter++;
 
   const arrayBuffer = await file.arrayBuffer();
   const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -203,27 +206,56 @@ async function handleFileUpload(event) {
 
   // Пример: получение данных спектрограммы
   const channelData = audioBuffer.getChannelData(0);
+  console.log(channelData);
   let data = []; // Здесь будет храниться спектрограмма
+  const for_size = channelData.length / (232*3*3);
+  console.log(for_size);
   
   // Получаем данные спектрограммы
-  for (let i = 0; i < channelData.length; i += frameSize) {
+  for (let i = channelData.length/3; i < channelData.length; i += (frameSize+1)) {
     const frame = channelData.slice(i, i + frameSize);
+    console.log(frame);
+    // //
     data.push(...frame);
+    
   }
+  // for (let i = 0; i < 2; i++) {
 
-  let vals = normalize1(data.slice(-frameSize * NUM_FRAMES));
+  //   let vals = normalize1(data.slice(-frameSize * NUM_FRAMES*i));
+  //   console.log(vals);
+  // }
+  console.log(data)
+  let vals = normalize1(data.slice(frameSize * NUM_FRAMES*(1),frameSize * NUM_FRAMES*2));
   console.log(vals);
   let counter = 0;
-  examples1.push({vals, label: 0}); 
-  document.querySelector('#example-counter').textContent =
-      `${examples1.length} examples collected`;
-      examples1.forEach(element => {
-        element.vals = new Float32Array(element.vals);
-        element.label = counter;
-        counter++;
-      });
-      console.log(examples1);
-  console.log(examples1);
+  for (let i = 1; i < parseInt(for_size); i++) {
+    let vals = normalize1(data.slice(frameSize * NUM_FRAMES*(i-1),frameSize * NUM_FRAMES*i));
+    // console.log(vals);
+    
+    examples1.push({vals, label: uniqueLabel}); 
+    document.querySelector('#example-counter').textContent =
+        `${examples1.length} examples collected`;
+        examples1.forEach(element => {
+          element.vals = new Float32Array(element.vals);
+          element.label = uniqueLabel;
+          //counter++;
+        });
+        //counter++;
+         console.log(examples1);
+  }
+  // let vals = normalize1(data.slice(-frameSize * NUM_FRAMES));
+  // console.log(vals);
+  // let counter = 0;
+  // examples1.push({vals, label: 0}); 
+  // document.querySelector('#example-counter').textContent =
+  //     `${examples1.length} examples collected`;
+  //     examples1.forEach(element => {
+  //       element.vals = new Float32Array(element.vals);
+  //       element.label = counter;
+  //       counter++;
+  //     });
+  //     console.log(examples1);
+  // console.log(examples1);
 }
 
 
@@ -235,7 +267,8 @@ function normalize(x) {
 function normalize1(x) {
   const mean = -100;
   const std = 10;
-  return x.map(x => (x - mean) / std);
+  return x.map(x => x*100);
+  //return x.map(x => (x - mean) / std);
  }
 
 
@@ -309,7 +342,7 @@ async function train1() {
   // Обучение модели
   await model.fit(xs, ys, {
     batchSize: 16,
-    epochs: 100,
+    epochs: 20,
     callbacks: {
       onEpochEnd: (epoch, logs) => {
         document.querySelector('#accuracy_weight').textContent =
