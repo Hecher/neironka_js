@@ -1,0 +1,319 @@
+.press-start-2p-regular {
+    font-family: "Press Start 2P", system-ui;
+    font-weight: 400;
+    font-style: normal;
+  }
+  
+
+
+    
+button {
+    font-size: 16px;
+    text-align: center;
+    font-family: "Press Start 2P", system-ui;
+    background: linear-gradient(0deg, rgba(181,79,0,1) 0%, rgba(255,137,0,1) 100%);
+}
+input::file-selector-button {
+    font-size: 12px;
+    text-align: center;
+    font-family: "Press Start 2P", system-ui;
+    background: linear-gradient(0deg, rgba(181,79,0,1) 0%, rgba(255,137,0,1) 100%); 
+}
+
+
+header {
+    letter-spacing: 2px;
+    -webkit-text-stroke: 2px black;
+    font-size: 24px;
+    text-align: center;
+    padding: 10px 5px;
+    background: rgb(209,122,0);
+    background: linear-gradient(0deg, rgb(243, 142, 0) 0%, rgb(255, 217, 0) 100%);
+    color: rgb(0, 202, 253);
+    max-width: 70%;
+    margin: auto;
+    border-radius: 0px 0px 10px 10px;
+}
+
+body {
+    font-family: "Press Start 2P", system-ui;
+    font-weight: 400;
+    font-style: normal;
+    margin: auto;
+    background-image: url("wallpaperflare.com_wallpaper.jpg");
+    background-size: auto auto;
+    background-repeat: no-repeat;
+    background-position: top center;
+    max-height: 100%;
+    max-width: 100%;
+    
+}
+
+.container {
+   
+    padding: auto;
+    max-width: 60%;
+    text-align: center;
+    margin: 0px auto;
+    
+   
+
+}
+
+.dirnoise {
+    max-width: 100%;
+    display: flex;
+    justify-content: space-around;
+    background: linear-gradient(0deg, rgba(111,111,111,0.85) 0%, rgba(255,255,255,0.5) 100%);
+    border: 2px solid rgb(39, 39, 39);
+    border-radius: 0px 0px 3px 3px;
+    border-top: 0px;
+    padding: 20px 0px;
+    margin: 0 auto;
+    padding-bottom: 10px;
+
+}
+
+.exlis {
+    max-width: 100%;
+    display:inline-flex;
+    flex-direction: row;
+   justify-content: space-between;
+}
+
+.view {
+    min-width: 45%;
+    max-width: 50%;
+    padding: 20px 10px;
+    margin: 5px 5px;
+
+    background: linear-gradient(0deg, rgba(111,111,111,0.85) 0%, rgba(255,255,255,0.5) 100%);
+    border: 2px solid rgb(39, 39, 39);
+    border-radius: 3px 3px 3px 3px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    
+}
+
+.listen {
+    min-width: 45%;
+    max-width: 50%;
+    padding: 20px 0px;
+    margin: 5px 5px;
+    
+    background: linear-gradient(0deg, rgba(111,111,111,0.85) 0%, rgba(255,255,255,0.5) 100%);
+    border: 2px solid rgb(39, 39, 39);
+    border-radius: 3px 3px 3px 3px;
+    
+}
+
+.modsave {
+    max-width: 100%;
+    padding: 20px 0px;
+    margin: 5px 5px;
+    
+    background: linear-gradient(0deg, rgba(111,111,111,0.85) 0%, rgba(255,255,255,0.5) 100%);
+    border: 2px solid rgb(39, 39, 39);
+    border-radius: 3px 3px 3px 3px;
+    display: flex;
+    flex-direction: column;
+}
+
+.choosemodel {
+    margin: 10px auto;
+    display: flex;
+}
+img {
+    max-width: 100%;
+}
+.image {
+    max-width: 80%;
+    margin: auto;
+}
+
+.input {
+    padding: 10px 0px;
+    margin: 10px auto;
+}
+
+
+
+
+
+.subbut {
+    margin: auto 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+
+.train {
+    margin-top: 20px;
+}
+
+.buttonstrain {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-around;
+}
+.butslider {
+    padding: 0px 10px;
+    display: flex;
+    justify-content: space-around;
+}
+#output {
+    min-width: 40%;
+    accent-color: rgb(255, 149, 0) ;
+}
+    
+
+#submit_files {
+    font-size: 12px
+}
+#upload-weights {
+    margin-top: 10px;
+}
+
+#examples {
+    margin-top: 30px;
+}
+
+.file {
+    overflow: hidden;
+    max-width: 175px;
+}
+
+
+@media (max-width: 1200px) {
+    .butslider {
+        display: flex; 
+        flex-direction: column;
+        justify-content: space-around;
+    }
+
+    .listen {
+        display: flex; 
+        flex-direction: column;
+    }
+    
+}
+
+
+@media (max-width: 840px) {
+
+    .listen {
+        display: flex; 
+        flex-direction: column;
+    }
+
+    .butslider {
+        display: flex; 
+        flex-direction: column;
+        justify-content: space-around;
+    }
+    .buttonstrain {
+        display: flex; 
+        flex-direction: column;
+        justify-content: space-around;
+    }
+    
+    #train1 {
+        margin-top: 10px;
+    }
+ 
+    input[type=file]{ 
+        color:transparent;
+    }
+    #submit_files {
+        max-width: 100%;
+        margin-right: 10px;
+    }
+
+}
+
+@media (max-width: 560px) {
+    header {
+
+        max-width: 70%;
+    }
+    body {
+       max-height: 100%;
+    }
+    .container {
+        max-width: 70%;
+    }
+
+    .listen {
+        display: flex; 
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .butslider {
+        display: flex; 
+        flex-direction: column;
+        justify-content: space-around;
+    }
+    .buttonstrain {
+        margin: 10px 0px;
+        display: flex; 
+        flex-direction: column;
+        justify-content: space-around;
+    }
+    #submit_files {
+        max-width: 100%;
+        margin-right: 10px;
+    }
+    #train1 {
+        margin-top: 10px;
+    }
+    input[type=file] {
+        color: transparent;
+    }
+
+}
+
+
+
+
+@media (max-width: 420px) {
+
+    header {
+
+        max-width: 100%;
+
+    }
+    .container {
+        max-width: 90%;
+    }
+
+    .listen {
+        display: flex; 
+        flex-direction: column;
+    }
+
+    .butslider {
+        display: flex; 
+        flex-direction: column;
+        justify-content: space-around;
+    }
+
+    .buttonstrain {
+        margin: 10px 0px;
+        display: flex; 
+        flex-direction: column;
+        justify-content: space-around;
+    }
+    
+
+    #submit_files {
+        max-width: 100%;
+        margin-right: 10px;
+    }
+    #train1 {
+        margin-top: 10px;
+    }
+
+}
